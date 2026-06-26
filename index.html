@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* anti-FOUC: paint the saved theme's background before anything renders,
+       so reloading in dark mode never flashes white first. */
+    try { if (localStorage.getItem('theme') === 'dark') document.documentElement.style.backgroundColor = '#081422'; } catch (e) {}
+  </script>
   <title>SpawnVault — Kerja Remote &amp; Penghasilan Dolar USD dari Rumah</title>
 
   <link rel="canonical" href="https://spawnvault.respawnsociety.web.id/" />
@@ -19,8 +24,8 @@
   <meta name="google-site-verification" content="jNv2tBQ3dB_dGhNu_AEzewj7VgSKsv6YXJQMU0Cjinw" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
-  <meta name="author" content="Respawn Society" />
-  <meta name="publisher" content="Respawn Society" />
+  <meta name="author" content="Codiosity" />
+  <meta name="publisher" content="Codiosity" />
   <meta name="application-name" content="SpawnVault" />
   <meta name="apple-mobile-web-app-title" content="SpawnVault" />
   <meta name="theme-color" content="#00c896" media="(prefers-color-scheme: light)" />
@@ -69,7 +74,7 @@
         "foundingDate": "2025",
         "parentOrganization": {
           "@type": "Organization",
-          "name": "Respawn Society",
+          "name": "Codiosity",
           "url": "https://respawnsociety.web.id/"
         },
         "sameAs": [
@@ -331,7 +336,10 @@
       color: var(--text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      /* light, cheap crossfade only on the page surface — not on every element */
+      transition: background-color .25s ease, color .25s ease;
     }
+    @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 
     /* skip link — hidden off-screen, only shown on keyboard focus */
     .skip-link {
@@ -344,25 +352,39 @@
     }
     .skip-link:focus { top: 0; outline: 2px solid var(--teal); outline-offset: 2px; }
 
-    /* ═══ NAV ═══ */
+    /* ═══ NAV — Dynamic Island ═══ */
+    section[id] { scroll-margin-top: 78px; }
     nav {
       position: sticky; top: 0; z-index: 200;
-      background: var(--nav-bg);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      box-shadow: var(--nav-shadow);
+      padding: 10px clamp(.6rem, 3vw, 1.5rem) 0;
+      pointer-events: none;                 /* transparent gutter ignores clicks */
     }
     .nav-inner {
-      max-width: 1280px; margin: auto;
+      pointer-events: auto;
+      max-width: 1180px; margin: auto;
       display: flex; align-items: center;
-      height: 54px; padding: 0 clamp(1.5rem,5vw,4rem);
+      height: 50px; padding: 0 8px 0 16px;
       gap: 2px;
+      background: var(--nav-bg);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: 0 6px 22px rgba(10,30,60,.12);
+      transition: transform .3s cubic-bezier(.4,.2,.2,1), box-shadow .3s ease;
+      will-change: transform;
     }
+    body.dark .nav-inner { box-shadow: 0 8px 26px rgba(0,0,0,.45); }
+    nav.scrolled .nav-inner {
+      transform: scale(.97);
+      box-shadow: 0 4px 16px rgba(10,30,60,.18);
+    }
+    body.dark nav.scrolled .nav-inner { box-shadow: 0 5px 20px rgba(0,0,0,.55); }
     .nav-logo {
       display: inline-flex; align-items: center;
       height: 42px; margin-right: auto; flex-shrink: 0;
       text-decoration: none;
-      font-size: 1.25rem; font-weight: 800; letter-spacing: -.03em;
+      font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em;
       background: linear-gradient(90deg, #00c896 0%, #1a6fd4 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -370,20 +392,37 @@
     .nav-links {
       display: flex; align-items: center; gap: 1px;
       overflow-x: auto; scrollbar-width: none;
+      position: relative;
     }
     .nav-links::-webkit-scrollbar { display: none; }
+    /* sliding "island" pill that follows the active / hovered link */
+    .nav-indicator {
+      position: absolute; top: 50%; left: 0;
+      height: 30px; width: 0;
+      transform: translate3d(0, -50%, 0);
+      background: var(--navy-dim);
+      border: 1px solid rgba(26,74,140,.22);
+      border-radius: 999px;
+      pointer-events: none; opacity: 0; z-index: 0;
+      transition:
+        transform .34s cubic-bezier(.34,1.15,.4,1),
+        width .34s cubic-bezier(.34,1.15,.4,1),
+        opacity .2s ease, background-color .4s ease, border-color .4s ease;
+    }
+    body.dark .nav-indicator { border-color: rgba(77,157,224,.3); }
+    .nav-indicator.ready { opacity: 1; }
     .nav-links a {
+      position: relative; z-index: 1;
       color: var(--muted); text-decoration: none;
       font-size: .79rem; font-weight: 500; white-space: nowrap;
-      padding: 5px 11px; border-radius: 7px;
-      transition: color .15s, background .15s; flex-shrink: 0;
+      padding: 5px 11px; border-radius: 999px;
+      transition: color .2s ease; flex-shrink: 0;
     }
-    .nav-links a:hover { color: var(--navy); background: var(--navy-dim); }
-    .nav-links a.pill {
-      color: var(--navy); border: 1px solid rgba(26,74,140,.25);
-      background: var(--navy-dim); font-weight: 700;
+    .nav-links a:hover { color: var(--navy); }
+    .nav-links a.pill { color: var(--navy); font-weight: 700; }
+    @media (prefers-reduced-motion: reduce) {
+      .nav-inner, .nav-indicator { transition: none !important; }
     }
-    .nav-links a.pill:hover { background: var(--navy); color: #fff; }
     .theme-toggle, .lang-toggle {
       background: none; border: 1px solid var(--border);
       border-radius: 7px; padding: 5px 8px; cursor: pointer;
@@ -883,6 +922,11 @@
   </style>
 </head>
 <body>
+<script>
+  /* anti-FOUC: apply the dark theme class before any content paints (runs as the
+     first body node, so the nav/hero never render in light mode then snap to dark). */
+  try { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); } catch (e) {}
+</script>
 
 <a href="#main" class="skip-link" data-i18n="skip-to-content">Skip to main content</a>
 
@@ -1533,9 +1577,7 @@
 <footer>
   <p data-i18n="footer-main"><strong>SpawnVault</strong> — All platforms personally tested and confirmed paying. Always free to join.</p>
   <p style="margin-top:.75rem; font-size:.8rem;">
-    A project by <a href="https://respawnsociety.web.id/" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:600;">Respawn Society</a>
-    &nbsp;·&nbsp; <a href="mailto:respawnsociety.group@gmail.com" style="color:var(--teal);text-decoration:none;font-weight:600;">respawnsociety.group@gmail.com</a>
-    &nbsp;·&nbsp; <a href="https://www.linkedin.com/company/respawn-society" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:600;">LinkedIn</a>
+    A project by <a href="https://respawnsociety.web.id/" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:600;">Codiosity</a>
   </p>
   <p style="margin-top:.5rem; opacity:.65; font-size:.73rem;" data-i18n="footer-sub">Crypto values are volatile. Earnings vary by usage and region. © 2025</p>
 </footer>
@@ -1569,6 +1611,96 @@
       }
     }
   });
+
+  /* ── nav: dynamic-island active tracking + sliding indicator ──
+     Lightweight: one rAF-throttled scroll listener + an IntersectionObserver.
+     Runs only on desktop (links are hidden under the burger on mobile). */
+  (function () {
+    const navEl = document.querySelector('nav');
+    const list  = document.querySelector('.nav-links');
+    const ind   = document.getElementById('navIndicator');
+
+    /* shrink the island slightly once the page is scrolled — passive + rAF */
+    if (navEl) {
+      let ticking = false;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          navEl.classList.toggle('scrolled', window.scrollY > 8);
+          ticking = false;
+        });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
+    const desktop = window.matchMedia('(min-width: 701px)');
+    if (!desktop.matches || !list || !ind) return;
+
+    const links = Array.from(list.querySelectorAll('a'));
+    let active = list.querySelector('a.pill') || links[0];
+    let rafId = null, pending = null;
+
+    function moveTo(el, animate = true) {
+      if (!el) return;
+      pending = el;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const el = pending; pending = null;
+        if (!el) return;
+        if (!animate) ind.style.transition = 'none';
+        const lr = list.getBoundingClientRect();
+        const r  = el.getBoundingClientRect();
+        ind.style.width = r.width + 'px';
+        ind.style.transform = `translate3d(${r.left - lr.left + list.scrollLeft}px, -50%, 0)`;
+        if (!animate) { void ind.offsetWidth; ind.style.transition = ''; }
+        ind.classList.add('ready');
+      });
+    }
+    function setActive(el) {
+      if (!el) return;
+      links.forEach(l => l.classList.remove('pill'));
+      el.classList.add('pill');
+      active = el;
+      moveTo(el);
+    }
+
+    links.forEach(l => {
+      l.addEventListener('mouseenter', () => moveTo(l), { passive: true });
+      l.addEventListener('focus', () => moveTo(l), { passive: true });
+      l.addEventListener('click', () => setActive(l));
+    });
+    list.addEventListener('mouseleave', () => moveTo(active), { passive: true });
+
+    requestAnimationFrame(() => moveTo(active, false));
+    let rt;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = setTimeout(() => moveTo(active, false), 120);
+    }, { passive: true });
+
+    /* scroll-spy: highlight the section currently in view */
+    const map = links
+      .map(l => {
+        const h = l.getAttribute('href');
+        return h && h.startsWith('#') && h.length > 1
+          ? { link: l, el: document.querySelector(h) } : null;
+      })
+      .filter(s => s && s.el);
+    if (map.length && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const m = map.find(s => s.el === e.target);
+            if (m && m.link !== active) setActive(m.link);
+          }
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      map.forEach(s => io.observe(s.el));
+    }
+  })();
 
   /* ── theme ── */
   function toggleTheme() {
