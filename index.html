@@ -75,11 +75,11 @@
         "parentOrganization": {
           "@type": "Organization",
           "name": "Codiosity",
-          "url": "https://respawnsociety.web.id/"
+          "url": "https://codiosity.com/"
         },
         "sameAs": [
           "https://www.linkedin.com/company/respawn-society",
-          "https://respawnsociety.web.id/"
+          "https://codiosity.com/"
         ],
         "contactPoint": {
           "@type": "ContactPoint",
@@ -365,21 +365,23 @@
       display: flex; align-items: center;
       height: 50px; padding: 0 8px 0 16px;
       gap: 2px;
-      background: var(--nav-bg);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
-      backdrop-filter: blur(16px) saturate(140%);
-      border: 1px solid var(--border);
+      /* ── glassmorphism ── */
+      background: rgba(255,255,255,.55);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      border: 1px solid rgba(255,255,255,.65);
       border-radius: 999px;
-      box-shadow: 0 6px 22px rgba(10,30,60,.12);
-      transition: transform .3s cubic-bezier(.4,.2,.2,1), box-shadow .3s ease;
-      will-change: transform;
+      box-shadow: 0 8px 30px rgba(10,30,60,.12), inset 0 1px 0 rgba(255,255,255,.7);
+      transition: box-shadow .3s ease, background-color .3s ease;
     }
-    body.dark .nav-inner { box-shadow: 0 8px 26px rgba(0,0,0,.45); }
-    nav.scrolled .nav-inner {
-      transform: scale(.97);
-      box-shadow: 0 4px 16px rgba(10,30,60,.18);
+    body.dark .nav-inner {
+      background: rgba(18,34,58,.5);
+      border-color: rgba(120,170,230,.18);
+      box-shadow: 0 10px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
     }
-    body.dark nav.scrolled .nav-inner { box-shadow: 0 5px 20px rgba(0,0,0,.55); }
+    /* scrolled: deepen the shadow only — no transform (avoids the skew/blur it caused) */
+    nav.scrolled .nav-inner { box-shadow: 0 12px 34px rgba(10,30,60,.18), inset 0 1px 0 rgba(255,255,255,.7); }
+    body.dark nav.scrolled .nav-inner { box-shadow: 0 14px 38px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); }
     .nav-logo {
       display: inline-flex; align-items: center;
       height: 42px; margin-right: auto; flex-shrink: 0;
@@ -1577,7 +1579,7 @@
 <footer>
   <p data-i18n="footer-main"><strong>SpawnVault</strong> — All platforms personally tested and confirmed paying. Always free to join.</p>
   <p style="margin-top:.75rem; font-size:.8rem;">
-    A project by <a href="https://respawnsociety.web.id/" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:600;">Codiosity</a>
+    A project by <a href="https://codiosity.com/" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:600;">Codiosity</a>
   </p>
   <p style="margin-top:.5rem; opacity:.65; font-size:.73rem;" data-i18n="footer-sub">Crypto values are volatile. Earnings vary by usage and region. © 2025</p>
 </footer>
